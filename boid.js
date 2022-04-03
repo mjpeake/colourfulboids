@@ -1,28 +1,39 @@
 class Boid {
   constructor(p, boidColor) {
     this.p = p;
+    this.color = boidColor;
 
+    // Position, Velocity and Acceleration
     this.position = p.createVector(p.random(p.width), p.random(p.height));
     this.velocity = p.createVector(p.random(-1, 1), p.random(-1, 1));
     this.acceleration = p.createVector();
 
+    // Tail
+    this.tail = []
+    this.tailLength = 15;
+
+    // Vision and Movement
     this.perceptionRadius = 60;
     this.separationRadius = 30;
     this.maxForce = 0.03;
     this.maxSpeed = 3;
-
-    if(boidColor != null) {
-      this.color = boidColor;
-    } else {
-      this.color = p.color(p.random(255), p.random(255), p.random(255));
-    }
   }
 
   // Display Boid on Canvas
   show() {
+    // Display head
     this.p.strokeWeight(6);
     this.p.stroke(this.color);
     this.p.point(this.position.x,this.position.y);
+
+    // Display tail
+    this.tailColor = this.p.color(this.color.toString('#rrggbb'));
+    for (var i = this.tail.length - 1; i > 0; i--) {
+      var alphaStep = 255 / this.tail.length
+      this.tailColor.setAlpha(alphaStep * (this.tail.length - i));
+      this.p.stroke(this.tailColor);
+      this.p.point(this.tail[i].x,this.tail[i].y);
+    }
   }
 
   // Contain Boid within Canvas
@@ -193,6 +204,13 @@ class Boid {
   }
 
   update() {
+    // Update tail
+    this.tail.unshift(this.p.createVector(this.position.x, this.position.y));
+    if (this.tail.length > this.tailLength) {
+      this.tail.pop();
+    }
+
+    // Update head
     this.position.add(this.velocity);
     this.velocity.add(this.acceleration);
     this.velocity.limit(this.maxSpeed);

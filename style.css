@@ -6,4 +6,5 @@ html, body {
 
 #boids {
   height: 100%;
+  overflow: hidden;
 }
