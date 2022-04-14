@@ -1,19 +1,25 @@
 const colourfulBoids = ( p ) => {
   let flock = [];
   let boidColor, backgroundColor;
-  const boidCount = 50; // Size of Population
 
   p.setup = function() {
     // Determine size of parent div
     const div = p.canvas.parentElement;
     p.createCanvas(div.offsetWidth, div.offsetHeight);
 
+    // Set palette if not set
     if(backgroundColor == null) {
       p.randomPalette();
     }
 
     // Populate
-    for(let i = 0; i < boidCount; i++) flock.push(new Boid(p, boidColor));
+    popSize = p.determinePopSize(div.offsetWidth,div.offsetHeight, 0.005);
+    for(let i = 0; i < popSize; i++) flock.push(new Boid(p, boidColor));
+  }
+
+  p.determinePopSize = function(width, height, density) {
+    area = width * height;
+    return area / (100/density);
   }
 
   p.randomPalette = function() {
