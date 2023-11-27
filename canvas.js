@@ -1,14 +1,16 @@
 const colourfulBoids = (p) => {
   // Params
   p.debug = false;
-  p.cellSize = 250;
+  p.cellSize = 400;
 
   // FrameRate Monitoring
   p.fpsHist = [];
   p.fpsHistSize = 60;
-  p.targetFPS = 60;
-  p.marginFPS = 4;
-  p.avgFPS = p.targetFPS;
+  p.fpsTarget = 60;
+  p.fpsMargin = 5;
+  p.fpsMin = p.fpsTarget - p.fpsMargin;
+  p.fpsMax = p.fpsTarget + p.fpsMargin;
+  p.avgFPS = p.fpsTarget;
 
   p.setup = function () {
     // Init new flock
@@ -27,13 +29,15 @@ const colourfulBoids = (p) => {
     p.determineCellCount(div.offsetWidth, div.offsetHeight);
 
     // Populate
-    p.popSize = p.determinePopSize(div.offsetWidth, div.offsetHeight, 0.01);
+    p.determinePopSize(div.offsetWidth, div.offsetHeight, 0.01);
     for (let i = 0; i < p.popSize; i++) p.flock.push(new Boid(p));
   }
 
   p.determinePopSize = function (width, height, density) {
     area = width * height;
-    return area / (100 / density);
+    p.popSize = area / (100 / density);
+    p.popSizeMin = p.popSize*0.75;
+    p.popSizeMax = p.popSize*1.25;
   }
 
   p.determineCellCount = function (width, height) {
@@ -53,7 +57,6 @@ const colourfulBoids = (p) => {
   }
 
   p.draw = function () {
-    // Refresh background
     p.background(p.backgroundColor);
     if (p.debug) {
       p.drawDebug()
@@ -93,10 +96,10 @@ const colourfulBoids = (p) => {
     if (p.fpsHist.length < p.fpsHistSize) {
       return
     }
-    if (p.avgFPS < p.targetFPS - p.marginFPS && p.flock.length > p.popSize*0.75) {
+    if (p.avgFPS < p.fpsMin && p.flock.length > p.popSizeMin) {
       p.flock.shift();
     }
-    if (p.avgFPS > p.targetFPS + p.marginFPS && p.flock.length < p.popSize*1.25) {
+    if (p.avgFPS > p.fpsMax && p.flock.length < p.popSizeMax) {
       p.flock.push(new Boid(p))
     }
   }

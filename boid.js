@@ -1,41 +1,50 @@
 class Boid {
   constructor(p) {
     this.p = p;
-    this.color = p.boidColor;
-
-    // Position, Velocity and Acceleration
-    this.position = p.createVector(p.random(p.width), p.random(p.height));
-    this.velocity = p.createVector(p.random(-1, 1), p.random(-1, 1));
-    this.acceleration = p.createVector();
-    this.cell = this.currentCell();
 
     // Body
     this.body = []
-    this.bodyLength = 15;
+    this.bodyLength = 10;
 
     // Vision and Movement
     this.perceptionRadius = 60;
     this.separationRadius = 30;
     this.maxForce = 0.03;
     this.maxSpeed = 3;
+    this.alignmentCoef = 1;
+    this.cohesionCoef = 1;
+    this.separationCoef = 1.2;
+
+    // Colour
+    this.color = p.boidColor;
+    this.bodyColor = [];
+    let alphaStep = 255 / this.bodyLength;
+    for (var i = 0; i < this.bodyLength; i++) {
+      let stepColor = this.p.color(p.boidColor.toString('#rrggbb'));
+      stepColor.setAlpha(alphaStep * (this.bodyLength - i));
+      this.bodyColor.push(stepColor);
+    }
+
+    // Position, Velocity and Acceleration
+    this.position = p.createVector(p.random(p.width), p.random(p.height));
+    this.velocity = p.createVector(p.random(-1, 1), p.random(-1, 1));
+    this.acceleration = p.createVector();
+    this.cell = this.currentCell();
   }
 
   // Display Boid on Canvas
   draw() {
     this.p.strokeWeight(6);
-    this.bodyColor = this.p.color(this.color.toString('#rrggbb'));
     for (var i = this.body.length - 1; i > 0; i--) {
-      var alphaStep = 255 / this.body.length
-      this.bodyColor.setAlpha(alphaStep * (this.body.length - i));
-      this.p.stroke(this.bodyColor);
+      this.p.stroke(this.bodyColor[i]);
       this.p.point(this.body[i].x, this.body[i].y);
     }
 
     if (this.p.debug) {
       this.p.strokeWeight(1);
-      this.p.stroke(this.bodyColor);
+      this.p.stroke(this.p.boidColor);
       this.p.noFill();
-      this.p.ellipse(this.body[i].x, this.body[i].y, this.perceptionRadius, this.perceptionRadius)
+      this.p.ellipse(this.body[0].x, this.body[0].y, this.perceptionRadius, this.perceptionRadius)
     }
   }
 
@@ -73,13 +82,13 @@ class Boid {
       let d = this.p.dist(this.position.x, this.position.y, other.position.x, other.position.y);
 
       // Within Vision Radius
-      if (d < this.perceptionRadius) {
+      if (d <= this.perceptionRadius) {
         alignment.add(other.velocity);
         cohesion.add(other.position);
         total++;
       }
       // Within Separation Radius
-      if (d < this.separationRadius) {
+      if (d <= this.separationRadius) {
         let diff = p5.Vector.sub(this.position, other.position);
         diff.div(d);
         separation.add(diff);
@@ -87,34 +96,35 @@ class Boid {
       }
     }
 
+
     if (total > 0) {
+      // Alignment
       alignment.div(total);
       alignment.setMag(this.maxSpeed);
       alignment.sub(this.velocity);
       alignment.limit(this.maxForce);
+      alignment.mult(this.alignmentCoef);
+      this.acceleration.add(alignment);
 
+      // Cohesion
       cohesion.div(total);
       cohesion.sub(this.position);
       cohesion.setMag(this.maxSpeed);
       cohesion.sub(this.velocity);
       cohesion.limit(this.maxForce);
+      cohesion.mult(this.cohesionCoef);
+      this.acceleration.add(cohesion);
     }
 
     if (totalSep > 0) {
+      // Separation
       separation.div(totalSep);
       separation.setMag(this.maxSpeed);
       separation.sub(this.velocity);
       separation.limit(this.maxForce);
+      separation.mult(this.separationCoef);
+      this.acceleration.add(separation);
     }
-
-    alignment.mult(1);
-    cohesion.mult(1);
-    separation.mult(1.2);
-
-    // Add influences
-    this.acceleration.add(alignment);
-    this.acceleration.add(cohesion);
-    this.acceleration.add(separation);
   }
 
   update() {
