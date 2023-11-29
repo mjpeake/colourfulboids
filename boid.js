@@ -40,7 +40,7 @@ class Boid {
       this.p.point(this.body[i].x, this.body[i].y);
     }
 
-    if (this.p.debug) {
+    if (debug) {
       this.p.strokeWeight(1);
       this.p.stroke(this.p.boidColor);
       this.p.noFill();
@@ -75,7 +75,7 @@ class Boid {
     let totalSep = 0;
 
     for (let other of boids) {
-      if (other == this || !this.cell.equals(other.cell)) {
+      if (other == this || !this.inNeighbourhood(other)) {
         continue
       }
 
@@ -132,7 +132,8 @@ class Boid {
     this.position.add(this.velocity);
     this.velocity.add(this.acceleration);
     this.velocity.limit(this.maxSpeed);
-    this.cell = this.currentCell()
+
+    this.cell = this.currentCell();
 
     // Update body
     this.body.unshift(this.p.createVector(this.position.x, this.position.y));
@@ -145,5 +146,16 @@ class Boid {
     let x = this.p.floor(this.position.x / (this.p.width / this.p.cellCountX));
     let y = this.p.floor(this.position.y / (this.p.height / this.p.cellCountY));
     return this.p.createVector(x, y)
+  }
+
+  inNeighbourhood(other) {
+    for (let x = this.cell.x - 1; x <= this.cell.x + 1; x++) {
+      for (let y = this.cell.y -1; y <= this.cell.y + 1; y++) {
+        if (other.cell.x == x || other.cell.y == y) {
+          return true
+        }
+      }
+    }
+    return false
   }
 }

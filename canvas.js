@@ -1,7 +1,8 @@
+let debug = false;
+
 const colourfulBoids = (p) => {
   // Params
-  p.debug = false;
-  p.cellSize = 400;
+  p.cellSize = 30;
 
   // FrameRate Monitoring
   p.fpsHist = [];
@@ -58,7 +59,7 @@ const colourfulBoids = (p) => {
 
   p.draw = function () {
     p.background(p.backgroundColor);
-    if (p.debug) {
+    if (debug) {
       p.drawDebug()
     }
 
@@ -75,16 +76,20 @@ const colourfulBoids = (p) => {
 
   p.drawDebug = function () {
     p.stroke(p.debugColor);
+    p.strokeWeight(1);
+    for (var x = 0; x < p.width; x += p.width / p.cellCountX) {
+      p.line(x, 0, x, p.height);
+    }
+    for (var y = 0; y < p.height; y += p.height / p.cellCountY) {
+      p.line(0, y, p.width, y);
+    }
+
+    p.fill(p.backgroundColor);
+    p.rect(0,0,120,70);
+    p.noFill();
     p.text("FPS:  " + p.round(p.avgFPS), 15, 20);
     p.text("POP: " + p.flock.length, 15, 35);
-
-    for (var x = 0; x < p.width; x += p.width / p.cellCountX) {
-      for (var y = 0; y < p.height; y += p.height / p.cellCountY) {
-        p.strokeWeight(1);
-        p.line(x, 0, x, p.height);
-        p.line(0, y, p.width, y);
-      }
-    }
+    p.text("CELLS: " + p.cellCountX * p.cellCountY, 15, 50);
   }
 
   p.windowResized = function () {
