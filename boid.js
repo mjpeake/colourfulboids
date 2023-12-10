@@ -17,19 +17,29 @@ class Boid {
 
     // Colour
     this.color = p.boidColor;
-    this.bodyColor = [];
-    let alphaStep = 255 / this.bodyLength;
-    for (var i = 0; i < this.bodyLength; i++) {
-      let stepColor = this.p.color(p.boidColor.toString('#rrggbb'));
-      stepColor.setAlpha(alphaStep * (this.bodyLength - i));
-      this.bodyColor.push(stepColor);
-    }
+    this.bodyColor = this.setBodyColor();
 
     // Position, Velocity and Acceleration
     this.position = p.createVector(p.random(p.width), p.random(p.height));
     this.velocity = p.createVector(p.random(-1, 1), p.random(-1, 1));
     this.acceleration = p.createVector();
     this.cell = this.currentCell();
+  }
+
+  setBodyColor() {
+    let bodyColor = [];
+    let alphaStep = 255 / this.bodyLength;
+    for (let i = 0; i < this.bodyLength; i++) {
+      bodyColor.push(
+        this.p.color(
+          this.color.levels[0],
+          this.color.levels[1],
+          this.color.levels[2],
+          alphaStep * (this.bodyLength - i)
+        )
+      );
+    }
+    return bodyColor;
   }
 
   // Display Boid on Canvas
@@ -50,17 +60,8 @@ class Boid {
 
   // Contain Boid within Canvas
   contain() {
-    if (this.position.x < 0) {
-      this.position.x = this.p.width;
-    } else if (this.position.x > this.p.width) {
-      this.position.x = 0;
-    }
-
-    if (this.position.y < 0) {
-      this.position.y = this.p.height;
-    } else if (this.position.y > this.p.height) {
-      this.position.y = 0;
-    }
+    this.position.x = (this.position.x + this.p.width) % this.p.width;
+    this.position.y = (this.position.y + this.p.height) % this.p.height;
   }
 
   flock(boids) {
@@ -129,10 +130,8 @@ class Boid {
 
   update() {
     // Update head
+    this.velocity.add(this.acceleration).limit(this.maxSpeed);
     this.position.add(this.velocity);
-    this.velocity.add(this.acceleration);
-    this.velocity.limit(this.maxSpeed);
-
     this.cell = this.currentCell();
 
     // Update body
@@ -143,19 +142,14 @@ class Boid {
   }
 
   currentCell() {
-    let x = this.p.floor(this.position.x / (this.p.width / this.p.cellCountX));
-    let y = this.p.floor(this.position.y / (this.p.height / this.p.cellCountY));
+    const x = Math.floor(this.position.x / (this.p.width / this.p.cellCountX));
+    const y = Math.floor(this.position.y / (this.p.height / this.p.cellCountY));
     return this.p.createVector(x, y)
   }
 
   inNeighbourhood(other) {
-    for (let x = this.cell.x - 1; x <= this.cell.x + 1; x++) {
-      for (let y = this.cell.y -1; y <= this.cell.y + 1; y++) {
-        if (other.cell.x == x || other.cell.y == y) {
-          return true
-        }
-      }
-    }
-    return false
+    const withinX = Math.abs(other.cell.x - this.cell.x) <= 1;
+    const withinY = Math.abs(other.cell.y - this.cell.y) <= 1;
+    return withinX && withinY;
   }
 }

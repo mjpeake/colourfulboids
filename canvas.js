@@ -1,19 +1,11 @@
 let debug = false;
 
 const colourfulBoids = (p) => {
-  // Params
-  p.cellSize = 30;
-
-  // FrameRate Monitoring
-  p.fpsHist = [];
-  p.fpsHistSize = 60;
-  p.fpsTarget = 60;
-  p.fpsMargin = 5;
-  p.fpsMin = p.fpsTarget - p.fpsMargin;
-  p.fpsMax = p.fpsTarget + p.fpsMargin;
-  p.avgFPS = p.fpsTarget;
-
   p.setup = function () {
+    // Params
+    p.cellSize = 30;
+    p.popDensity = 0.0075;
+
     // Init new flock
     p.flock = [];
 
@@ -30,15 +22,12 @@ const colourfulBoids = (p) => {
     p.determineCellCount(div.offsetWidth, div.offsetHeight);
 
     // Populate
-    p.determinePopSize(div.offsetWidth, div.offsetHeight, 0.01);
+    p.determinePopSize(div.offsetWidth, div.offsetHeight, p.popDensity);
     for (let i = 0; i < p.popSize; i++) p.flock.push(new Boid(p));
   }
 
   p.determinePopSize = function (width, height, density) {
-    area = width * height;
-    p.popSize = area / (100 / density);
-    p.popSizeMin = p.popSize*0.75;
-    p.popSizeMax = p.popSize*1.25;
+    p.popSize = (width * height) / (100 / density);
   }
 
   p.determineCellCount = function (width, height) {
@@ -70,8 +59,6 @@ const colourfulBoids = (p) => {
       boid.update();
       boid.draw();
     }
-
-    p.optimise()
   }
 
   p.drawDebug = function () {
@@ -85,40 +72,15 @@ const colourfulBoids = (p) => {
     }
 
     p.fill(p.backgroundColor);
-    p.rect(0,0,120,70);
+    p.rect(0, 0, 120, 70);
     p.noFill();
-    p.text("FPS:  " + p.round(p.avgFPS), 15, 20);
+    p.text("FPS:  " + p.round(p.frameRate()), 15, 20);
     p.text("POP: " + p.flock.length, 15, 35);
     p.text("CELLS: " + p.cellCountX * p.cellCountY, 15, 50);
   }
 
   p.windowResized = function () {
     p.setup();
-  }
-
-  p.optimise = function () {
-    p.determineFPS();
-    if (p.fpsHist.length < p.fpsHistSize) {
-      return
-    }
-    if (p.avgFPS < p.fpsMin && p.flock.length > p.popSizeMin) {
-      p.flock.shift();
-    }
-    if (p.avgFPS > p.fpsMax && p.flock.length < p.popSizeMax) {
-      p.flock.push(new Boid(p))
-    }
-  }
-
-  p.determineFPS = function () {
-    p.fpsHist.push(p.frameRate())
-    if (p.fpsHist.length > p.fpsHistSize) {
-      p.fpsHist.shift()
-    }
-    let sum = 0;
-    for (let fps of p.fpsHist) {
-      sum += fps;
-    }
-    p.avgFPS = sum / p.fpsHist.length;
   }
 }
 
