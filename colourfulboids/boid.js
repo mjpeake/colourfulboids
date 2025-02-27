@@ -1,3 +1,5 @@
+const p5 = require("p5");
+
 class Boid {
   constructor(p) {
     this.p = p;
@@ -50,7 +52,7 @@ class Boid {
       this.p.point(this.body[i].x, this.body[i].y);
     }
 
-    if (debug) {
+    if (this.p.debug) {
       this.p.strokeWeight(1);
       this.p.stroke(this.p.boidColor);
       this.p.noFill();
@@ -153,3 +155,4 @@ class Boid {
     return withinX && withinY;
   }
 }
+module.exports = Boid;
