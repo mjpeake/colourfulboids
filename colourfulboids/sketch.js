@@ -86,7 +86,14 @@ function ColourfulBoids(element, boidColor, backgroundColor) {
       p.text("CELLS: " + p.cellCountX * p.cellCountY, 15, 50);
     }
 
-    p.windowResized = debounce(p.setup, 100);
+    p.resize = function () {
+      // Only resize if the canvas size has actually changed
+      const div = p.canvas.parentElement;
+      if (p.canvas.offsetWidth != div.offsetWidth || p.canvas.offsetHeight != div.offsetHeight) {
+        p.setup();
+      }
+    }
+    p.windowResized = debounce(p.resize, 100);
   }
   new p5(sketch, element)
 }
